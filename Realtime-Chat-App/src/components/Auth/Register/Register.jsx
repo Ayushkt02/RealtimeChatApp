@@ -1,8 +1,9 @@
 import React, {useState} from "react";
-import{Grid, Form, Segment} from 'semantic-ui-react'
+import{Message} from 'semantic-ui-react'
 
 const Register = ()=>{
-
+    
+    
     let user = {
         Username: '',
         email: '',
@@ -10,16 +11,62 @@ const Register = ()=>{
         confirmpassword: ''
     }
 
+    let errors = []
+    
     const [userState, setuserState] = useState(user);
+    const [errorState, seterrorState] = useState(errors);
+
+    // const handleInput = (event) => {
+    //   let newState = {...userState}
+    //   let { name, value } = event.target
+    //   newState[name] = value
+    //   setuserState(newState)
+    // }
 
     const handleInput = (event) => {
-        let target = event.target;
-        setuserState((currentState)=>{
-            let currentUser = {...currentState};
-            currentUser[target.name] = target.value;
-        })
+      let target = event.target;
+      setuserState((currentState) => {
+        let currentuser = {...currentState};
+        currentuser[target.name] = target.value;
+        return currentuser;
+      })
     }
 
+    const checkForm = ()=>{
+      if(isFormEmpty()){
+        seterrorState((error) => error.concat({message : "Please Fill All fields"}));
+        return false;
+      }else if(!checkPassword()){
+        seterrorState((error) => error.concat({message : "Given Password is not valid"}));
+        return false;
+      }
+      return true;
+    }
+
+    const isFormEmpty = ()=>{
+      return !userState.Username.length || !userState.email.length || !userState.password.length || !userState.confirmpassword.length;
+    }
+
+    const checkPassword = () => {
+      if(userState.password.length < 8){
+        return false;
+      }else if(userState.password !== userState.confirmpassword){
+        return false;
+      }
+      return true;
+    }
+
+    const onSubmit = (event) => {
+        if(checkForm){
+
+        }else{
+
+        }
+    }
+
+    const formatErrors = () => {
+        return errorState.map((error, index) => <p key={index}>{error.message}</p>)
+    }
 
     return (
         <section>
@@ -37,7 +84,7 @@ const Register = ()=>{
                 Sign In
               </a>
             </p>
-            <form action="#" method="POST" className="mt-8">
+            <form onSubmit={onSubmit} className="mt-8">
               <div className="space-y-5">
                 <div>
                   <label htmlFor="name" className="text-base font-medium text-gray-900">
@@ -109,7 +156,6 @@ const Register = ()=>{
                 </div>
                 <div>
                   <button
-                    type="button"
                     className="inline-flex w-full items-center justify-center rounded-md bg-black px-3.5 py-2.5 font-semibold leading-7 text-white hover:bg-black/80"
                   >
                     Create Account
@@ -117,6 +163,10 @@ const Register = ()=>{
                 </div>
               </div>
             </form>
+            {errorState.length > 0 && <Message error>
+                <h3>Errors</h3>
+                {formatErrors()}
+            </Message>}
           </div>
         </div>
       </div>
