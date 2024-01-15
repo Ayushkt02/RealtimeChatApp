@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Message } from "semantic-ui-react";
+import firebase from '../../../server/firebase.js'
 
 const Register = () => {
   let user = {
@@ -37,7 +38,7 @@ const Register = () => {
         );
       } else {
         seterrorState((error) =>
-          error.concat({ message: "Given Password is not valid" })
+          error.concat({ message: "Password and confirm Password does not match" })
         );
       }
       return false;
@@ -67,6 +68,14 @@ const Register = () => {
     event.preventDefault();
     seterrorState(() => []);
     if (checkForm()) {
+        firebase.auth()
+        .createUserWithEmailAndPassword(userState.email,userState.password)
+        .then(createdUser => {
+            console.log(createdUser);
+        })
+        .catch(error => {
+            console.log(error);
+        })
     } else {
     }
     // console.log(errorState)
