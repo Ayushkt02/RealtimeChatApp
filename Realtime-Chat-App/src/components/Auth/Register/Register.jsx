@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Message } from "semantic-ui-react";
-import firebase from '../../../server/firebase.js'
+import firebase from "../../../server/firebase.js";
+// import { databse } from "../../../server/firebase.js";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const Register = () => {
   let user = {
@@ -11,8 +13,11 @@ const Register = () => {
   };
   let errors = [];
 
+  let userCollectionRef = firebase.database().ref("users");
+
   let [userState, setuserState] = useState(user);
   const [errorState, seterrorState] = useState(errors);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInput = (event) => {
     let target = event.target;
@@ -38,7 +43,9 @@ const Register = () => {
         );
       } else {
         seterrorState((error) =>
-          error.concat({ message: "Password and confirm Password does not match" })
+          error.concat({
+            message: "Password and confirm Password does not match",
+          })
         );
       }
       return false;
@@ -68,17 +75,58 @@ const Register = () => {
     event.preventDefault();
     seterrorState(() => []);
     if (checkForm()) {
-        firebase.auth()
-        .createUserWithEmailAndPassword(userState.email,userState.password)
-        .then(createdUser => {
-            console.log(createdUser);
+      setIsLoading(true);
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(userState.email, userState.password)
+        .then((createdUser) => {
+          setIsLoading(false);
+          updateuserDetails(createdUser);
         })
-        .catch(error => {
-            console.log(error);
-        })
+        .catch((serverError) => {
+          setIsLoading(false);
+          seterrorState((error) => error.concat(serverError));
+        });
     } else {
     }
-    // console.log(errorState)
+  };
+
+  const updateuserDetails = (createdUser) => {
+    if (createdUser) {
+      setIsLoading(true);
+      createdUser.user
+        .updateProfile({
+          displayName: userState.Username,
+          photoURL: `https://gravatar.com/avatar/${createdUser.user.uid}?d=identicon`,
+        })
+        .then(() => {
+          setIsLoading(false);
+          saveUserInDB(createdUser);
+        })
+        .catch((serverError) => {
+          setIsLoading(false);
+          seterrorState((error) => error.concat(serverError));
+        });
+    }
+  };
+
+  const saveUserInDB = (createdUser) => {
+    setIsLoading(true);
+    userCollectionRef
+      .child(createdUser.user.uid)
+      .set({
+        displayName: createdUser.user.displayName,
+        photoURL: createdUser.user.photoURL,
+      })
+      .then(() => {
+        setIsLoading(false);
+        console.log("User Saved in db");
+      })
+      .catch((serverError) => {
+        setIsLoading(false);
+
+        seterrorState((error) => error.concat(serverError));
+      });
   };
 
   const formatErrors = () => {
@@ -186,7 +234,11 @@ const Register = () => {
                   </div>
                 </div>
                 <div>
-                  <button className="inline-flex w-full items-center justify-center rounded-md bg-black px-3.5 py-2.5 font-semibold leading-7 text-white hover:bg-black/80">
+                  <button
+                    disabled={isLoading}
+                    loading={isLoading}
+                    className="inline-flex w-full items-center justify-center rounded-md bg-black px-3.5 py-2.5 font-semibold leading-7 text-white hover:bg-black/80"
+                  >
                     Create Account
                   </button>
                 </div>
