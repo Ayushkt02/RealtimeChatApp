@@ -18,6 +18,7 @@ const Register = () => {
   let [userState, setuserState] = useState(user);
   const [errorState, seterrorState] = useState(errors);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleInput = (event) => {
     let target = event.target;
@@ -74,6 +75,7 @@ const Register = () => {
   const onSubmit = (event) => {
     event.preventDefault();
     seterrorState(() => []);
+    setIsSuccess(false);
     if (checkForm()) {
       setIsLoading(true);
       firebase
@@ -120,7 +122,7 @@ const Register = () => {
       })
       .then(() => {
         setIsLoading(false);
-        console.log("User Saved in db");
+        setIsSuccess(true);
       })
       .catch((serverError) => {
         setIsLoading(false);
@@ -236,7 +238,7 @@ const Register = () => {
                 <div>
                   <button
                     disabled={isLoading}
-                    loading={isLoading}
+                    loading={isLoading.toString()}
                     className="inline-flex w-full items-center justify-center rounded-md bg-black px-3.5 py-2.5 font-semibold leading-7 text-white hover:bg-black/80"
                   >
                     Create Account
@@ -248,6 +250,12 @@ const Register = () => {
               <Message error>
                 <h3>Errors</h3>
                 {formatErrors()}
+              </Message>
+            )}
+
+            {isSuccess && (
+              <Message success>
+                <h3>Successfully Registered</h3>
               </Message>
             )}
           </div>
