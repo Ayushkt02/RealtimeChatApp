@@ -3,6 +3,8 @@ import { Message } from "semantic-ui-react";
 import firebase from "../../../server/firebase.js";
 // import { databse } from "../../../server/firebase.js";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+
 
 const Login = () => {
   let user = {
@@ -14,6 +16,9 @@ const Login = () => {
   let [userState, setuserState] = useState(user);
   const [errorState, seterrorState] = useState(errors);
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
+
 
   const handleInput = (event) => {
     let target = event.target;
@@ -49,6 +54,7 @@ const Login = () => {
         .then((user) => {
           setIsLoading(false);
           console.log(user);
+          navigate('/');
         })
         .catch((serverError) => {
           setIsLoading(false);
