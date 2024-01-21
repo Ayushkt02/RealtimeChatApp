@@ -1,10 +1,20 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import firebase from "../../server/firebase.js";
-import { SidebarTwo } from "../SideBar/SideBar.jsx";
+import SideBar from "../SideBar/SideBar.jsx";
 
-const Home = (props) => {
+const Home = (props = null) => {
   const navigate = useNavigate();
+  console.log(props);
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+      if(user){
+      }else{
+        navigate("/login");
+      }
+    })
+  }, [])
 
   const logout = () => {
     firebase
@@ -26,7 +36,7 @@ const Home = (props) => {
           Logout
         </button>
       </div>
-      <SidebarTwo/>
+      <SideBar/>
     </>
   );
 };
