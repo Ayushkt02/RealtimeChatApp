@@ -53,7 +53,6 @@ const Login = () => {
         .signInWithEmailAndPassword(userState.email, userState.password)
         .then((user) => {
           setIsLoading(false);
-          console.log(user);
           navigate('/');
         })
         .catch((serverError) => {

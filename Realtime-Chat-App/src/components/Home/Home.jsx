@@ -3,9 +3,16 @@ import { useNavigate } from "react-router-dom";
 import firebase from "../../server/firebase.js";
 import SideBar from "../SideBar/SideBar.jsx";
 
-const Home = (props = null) => {
+const Home = (props) => {
   const navigate = useNavigate();
-  console.log(props);
+
+  useEffect(() => {
+    if(props){
+
+    }else{
+      navigate('/login');
+    }
+  }, [props])
 
   useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
@@ -36,7 +43,7 @@ const Home = (props = null) => {
           Logout
         </button>
       </div>
-      <SideBar/>
+      <SideBar name={props}/>
     </>
   );
 };
