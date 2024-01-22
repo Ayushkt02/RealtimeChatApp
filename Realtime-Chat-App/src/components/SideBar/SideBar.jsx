@@ -1,18 +1,72 @@
-import React from "react";
+import React, { useState } from "react";
 import { UserInfo } from "../UserInfo/UserInfo";
 import firebase from "../../server/firebase.js";
 
-const logout = () => {
-  firebase
-    .auth()
-    .signOut()
-    .then(() => {
-      navigate("/login");
-    })
-    .catch((error) => {});
-};
-
 const SideBar = (props) => {
+  const [showForm, setShowForm] = useState(false);
+  const [channelAddState, setChannelAddState] = useState({
+    name: "",
+    description: "",
+  });
+  const channelsRef = firebase.database().ref("channels");
+
+  const handleButtonClick = () => {
+    setShowForm(!showForm);
+  };
+
+  const handleInput = (event) => {
+    let target = event.target;
+    setChannelAddState((currentState) => {
+      let Updatedstate = { ...currentState };
+      Updatedstate[target.name] = target.value;
+      return Updatedstate;
+    });
+  };
+
+  const checkForm = () => {
+    return (
+      channelAddState && channelAddState.name && channelAddState.description
+    );
+  };
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+
+    if (!checkForm) {
+      return;
+    }
+
+    const key = channelsRef.push().key;
+    const channel = {
+      id: key,
+      name: channelAddState.name,
+      description: channelAddState.description,
+      created_by: {
+        name: props.name.name.multiFactor.user.displayName,
+        avatar: props.name.name.multiFactor.user.photoURL,
+      },
+    };
+    channelsRef
+      .child(key)
+      .update(channel)
+      .then(() => {
+        setChannelAddState({ name: "", description: "" });
+        handleButtonClick();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const logout = () => {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        navigate("/login");
+      })
+      .catch((error) => {});
+  };
   return (
     <aside className="flex h-screen w-64 flex-col overflow-y-auto border-r bg-black px-5 py-8">
       <a href="#">
@@ -22,9 +76,53 @@ const SideBar = (props) => {
       <div className="mt-6 flex flex-1 flex-col justify-between">
         <nav className="-mx-3 space-y-6 ">
           <div className="space-y-3 ">
-            <label className="px-3 text-xs font-semibold uppercase text-white">
-              analytics
-            </label>
+            <div className="flex justify-between items-center">
+              <label className="px-3 text-lg font-semibold uppercase text-white">
+                Channels({0})
+              </label>
+
+              <div>
+                <a
+                  className="text-lg rounded-lg px-3 text-gray-200 transition-colors duration-300 hover:bg-gray-50 hover:text-gray-700 hover: cursor-pointer"
+                  onClick={handleButtonClick}
+                >
+                  <span>ADD +</span>
+                </a>
+              </div>
+            </div>
+            <div className="bg-gray-600 rounded-lg transition-all duration-300">
+              {showForm && (
+                <form
+                  onSubmit={onSubmit}
+                  className="flex-col space-y-4 transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-30"
+                >
+                  <h3>Create New Channel</h3>
+                  <input
+                    type="text"
+                    name="name"
+                    value={channelAddState.name}
+                    onChange={handleInput}
+                    placeholder="Channel Name"
+                    className=" rounded-lg text-black px-3 py-1"
+                  />
+                  <textarea
+                    type="text"
+                    name="description"
+                    value={channelAddState.description}
+                    onChange={handleInput}
+                    placeholder="Channel Description"
+                    className="rounded-lg text-black px-3"
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-lg w-full py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-50 hover:text-gray-700"
+                    onClick={onSubmit}
+                  >
+                    Create
+                  </button>
+                </form>
+              )}
+            </div>
             <a
               className="flex transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-50 hover:text-gray-700"
               href="#"
