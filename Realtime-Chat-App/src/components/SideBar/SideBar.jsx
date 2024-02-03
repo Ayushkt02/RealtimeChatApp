@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { UserInfo } from "../UserInfo/UserInfo";
 import firebase from "../../server/firebase.js";
+
 
 const SideBar = (props) => {
   const [showForm, setShowForm] = useState(false);
@@ -8,7 +9,18 @@ const SideBar = (props) => {
     name: "",
     description: "",
   });
+  const [channelsState, setChannelsState] = useState([]);
   const channelsRef = firebase.database().ref("channels");
+
+  useEffect(() => {
+    channelsRef.on("child_added", (snap) => {
+      setChannelsState((currentState) => {
+        let Updatedstate = [...currentState];
+        Updatedstate.push(snap.val());
+        return Updatedstate;
+      });
+    });
+  }, []);
 
   const handleButtonClick = () => {
     setShowForm(!showForm);
@@ -27,6 +39,21 @@ const SideBar = (props) => {
     return (
       channelAddState && channelAddState.name && channelAddState.description
     );
+  };
+
+  const displayChannels = () => {
+    if (channelsState.length > 0) {
+       return channelsState.map((channel) => {
+        console.log(channel);
+        return <a
+          className="flex transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-50 hover:text-gray-700"
+          key={channel.id}
+          name={channel.name}
+        >
+          <span className="mx-2 text-sm font-medium">{channel.name}</span>
+        </a>;
+      });
+    }
   };
 
   const onSubmit = (event) => {
@@ -78,7 +105,7 @@ const SideBar = (props) => {
           <div className="space-y-3 ">
             <div className="flex justify-between items-center">
               <label className="px-3 text-lg font-semibold uppercase text-white">
-                Channels({0})
+                Channels({channelsState.length})
               </label>
 
               <div>
@@ -123,18 +150,7 @@ const SideBar = (props) => {
                 </form>
               )}
             </div>
-            <a
-              className="flex transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-50 hover:text-gray-700"
-              href="#"
-            >
-              <span className="mx-2 text-sm font-medium">Dashboard</span>
-            </a>
-            <a
-              className="flex transform items-center rounded-lg px-3 py-2 text-gray-200 transition-colors duration-300 hover:bg-gray-100 hover:text-gray-700"
-              href="#"
-            >
-              <span className="mx-2 text-sm font-medium">Sales</span>
-            </a>
+            {displayChannels()}
           </div>
           <div className="space-y-3 ">
             <label className="px-3 text-xs font-semibold uppercase text-white">
